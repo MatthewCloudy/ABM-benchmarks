@@ -1,0 +1,25 @@
+
+Update message: Agents v6
+
+This is a new major version of Agents.jl with lots of cool stuff!
+However, from this version onwards, we will stop posting update messages
+to the REPL console!
+
+If you want to be updated, follow this discourse post:
+
+https://discourse.julialang.org/t/agents-jl-v6-releases-announcement-post/111678
+
+(and see the CHANGELOG.md file online for a list of changes!)
+1
+=== PARAMETRY ===
+Całkowita liczba agentów: 10000
+Udział wilków (ratio): 0.2
+Wilków: 2000
+Owiec:  8000
+
+=== PODSUMOWANIE ===
+Całkowity czas (suma kroków): 1.3908464209999996 s
+Średni czas kroku: 0.002781692841999999 s
+Mediana czasu kroku: 7.406e-6 s
+Najszybszy krok: 7.309e-6 s
+Najwolniejszy krok: 1.321939549 s
