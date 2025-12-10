@@ -10,30 +10,35 @@ DIMS="20x20"
 
 SLEEP_INTERVAL=0.1
 RESULTS_DIR="results"
+LOG_DIR="logs"
+
 mkdir -p $RESULTS_DIR
+mkdir -p $LOG_DIR
 
 echo "=== Building Docker image ==="
 docker build -t $IMAGE_NAME .
 
 run_single_test() {
     local AGENTS=$1
+    local CONTAINER_NAME="agents_bench_${AGENTS}"
     local OUTFILE="$RESULTS_DIR/metrics_agents${AGENTS}.csv"
-    local LOGFILE="logs/output_agents${AGENTS}.log"
+    local LOGFILE="$LOG_DIR/output_agents${AGENTS}.log"
+    local TIMESFILE="/logs/times_agents${AGENTS}.csv"
 
     echo "timestamp,cpu_percent,mem_mb" > "$OUTFILE"
 
     echo "=== Start test for agents=$AGENTS ==="
 
-    # Uruchomienie kontenera z zamontowanym wolumenem
     docker run --rm --name "$CONTAINER_NAME" \
         -v $(pwd)/logs:/logs \
         "$IMAGE_NAME" \
         "agents=$AGENTS" "ratio=$RATIO" "steps=$STEPS" "dims=$DIMS" \
+        "outfile=$TIMESFILE" \
         > "$LOGFILE" 2>&1 &
 
     sleep 0.2
 
-    # Pomiar zasobów
+    # Pomiar CPU/RAM dopóki działa
     while docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null | grep -q true; do
         LINE=$(docker stats --no-stream --format "{{.CPUPerc}},{{.MemUsage}}" "$CONTAINER_NAME")
         [[ -z "$LINE" ]] && break
@@ -46,11 +51,10 @@ run_single_test() {
         sleep $SLEEP_INTERVAL
     done
 
-    echo "Finished test → $OUTFILE (log: $LOGFILE)"
+    echo "Finished test → $OUTFILE"
 }
 
 
-# Pętla główna
 for A in "${AGENTS_LIST[@]}"; do
     run_single_test "$A"
 done

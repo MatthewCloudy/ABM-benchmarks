@@ -1,2 +1,29 @@
-docker: Error response from daemon: Conflict. The container name "/agents_bench" is already in use by container "72c12956b46f319ad615aa6ac53a8e1705640322d6893ca283ef11c41f3fd335". You have to remove (or rename) that container to be able to reuse that name.
-See 'docker run --help'.
+
+Update message: Agents v6
+
+This is a new major version of Agents.jl with lots of cool stuff!
+However, from this version onwards, we will stop posting update messages
+to the REPL console!
+
+If you want to be updated, follow this discourse post:
+
+https://discourse.julialang.org/t/agents-jl-v6-releases-announcement-post/111678
+
+(and see the CHANGELOG.md file online for a list of changes!)
+Threads: 1
+
+=== PARAMETRY ===
+Całkowita liczba agentów: 100000
+Udział wilków (ratio): 0.2
+Wilków: 20000
+Owiec:  80000
+
+=== PODSUMOWANIE ===
+Całkowity czas: 9.179168897
+Średni czas kroku: 0.018358337794
+Mediana: 0.000111989
+Min: 0.00010535
+Max: 1.940020578
+
+>> Zapisano czasy kroków do pliku CSV:
+/logs/times_agents100000.csv

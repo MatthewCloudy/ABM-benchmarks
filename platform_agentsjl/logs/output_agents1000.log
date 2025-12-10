@@ -10,7 +10,8 @@ If you want to be updated, follow this discourse post:
 https://discourse.julialang.org/t/agents-jl-v6-releases-announcement-post/111678
 
 (and see the CHANGELOG.md file online for a list of changes!)
-1
+Threads: 1
+
 === PARAMETRY ===
 Całkowita liczba agentów: 1000
 Udział wilków (ratio): 0.2
@@ -18,8 +19,11 @@ Wilków: 200
 Owiec:  800
 
 === PODSUMOWANIE ===
-Całkowity czas (suma kroków): 1.4123397160000017 s
-Średni czas kroku: 0.0028246794320000036 s
-Mediana czasu kroku: 2.692e-6 s
-Najszybszy krok: 2.5e-6 s
-Najwolniejszy krok: 1.406861967 s
+Całkowity czas: 2.047313471999998
+Średni czas kroku: 0.004094626943999996
+Mediana: 2.656e-6
+Min: 2.56e-6
+Max: 2.042295044
+
+>> Zapisano czasy kroków do pliku CSV:
+/logs/times_agents1000.csv
