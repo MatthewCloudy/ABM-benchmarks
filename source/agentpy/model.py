@@ -1,212 +1,273 @@
-import agentpy as ap
-import numpy as np
-import random
 import time
+import random
+import numpy as np
+import agentpy as ap
+
+# ==========================================
+# KONFIGURACJA (te same parametry co w Mesa)
+# ==========================================
+STEPS_TO_RUN = 2000  # Ile kroków ma trwać test
+NB_PREYS_INIT = 2000
+NB_PREDATORS_INIT = 200
+WIDTH = 150
+HEIGHT = 150
+
+# Parametry Agentów
+PREY_MAX_ENERGY = 1.0
+PREY_MAX_TRANSFER = 0.1
+PREY_ENERGY_CONSUM = 0.05
+PREY_PROBA_REPRODUCE = 0.01
+PREY_NB_MAX_OFFSPRINGS = 5
+PREY_ENERGY_REPRODUCE = 0.5
+
+PREDATOR_MAX_ENERGY = 1.0
+PREDATOR_ENERGY_TRANSFER = 0.5
+PREDATOR_ENERGY_CONSUM = 0.02
+PREDATOR_PROBA_REPRODUCE = 0.01
+PREDATOR_NB_MAX_OFFSPRINGS = 3
+PREDATOR_ENERGY_REPRODUCE = 0.5
+
+CELL_MAX_FOOD = 1.0
 
 
-# =========================
-# === PARAMETRY ===========
-# =========================
+# ==========================================
+# KLASY AGENTÓW – agentpy
+# ==========================================
 
-STEPS_TO_RUN = 2000
-
-parameters = dict(
-    steps_to_run=STEPS_TO_RUN,
-    nb_preys_init=200,
-    nb_predators_init=20,
-    width=50,
-    height=50,
-
-    prey_max_energy=1.0,
-    prey_max_transfer=0.1,
-    prey_energy_consum=0.05,
-    prey_proba_reproduce=0.01,
-    prey_nb_max_offsprings=5,
-    prey_energy_reproduce=0.5,
-
-    predator_max_energy=1.0,
-    predator_energy_transfer=0.5,
-    predator_energy_consum=0.02,
-    predator_proba_reproduce=0.01,
-    predator_nb_max_offsprings=3,
-    predator_energy_reproduce=0.5,
-
-    cell_max_food=1.0,
-)
-
-
-# =========================
-# === AGENT BAZOWY ========
-# =========================
-
-class Animal(ap.Agent):
+class GenericAgent(ap.Agent):
+    """Wspólne rzeczy dla Prey i Predator."""
 
     def setup(self):
-        self.energy = random.random() * self.p.max_energy
+        # skróty do środowiska i RNG
+        self.grid = self.model.grid
+        self.random = self.model.random
+        # atrybuty typu max_energy itd. ustawiają podklasy
 
-    def move(self):
-        grid = self.model.grid
-        pos = grid.positions[self]
+    def basic_move(self):
+        """Losowy krok w sąsiedztwie Moore’a (8 kierunków)."""
+        dx, dy = self.random.choice(self.model.move_directions)
+        # torus=True, więc zawijanie obsługuje grid
+        self.grid.move_by(self, (dx, dy))
 
-        neighbors = grid.neighbors(pos, moore=True, include_center=False)
-        if neighbors:
-            grid.move_to(self, random.choice(neighbors))
+    def attempt_reproduce(self, agent_class):
+        """Reprodukcja w tym samym polu, jak w wersji Mesa."""
+        if self.energy >= self.energy_reproduce and self.random.random() < self.proba_reproduce:
+            nb_offsprings = self.random.randint(1, self.nb_max_offsprings)
+            if nb_offsprings <= 0:
+                return
 
-    def die_if_needed(self):
+            energy_share = self.energy / nb_offsprings
+
+            for _ in range(nb_offsprings):
+                offspring = agent_class(self.model)
+                offspring.energy = energy_share
+                # pozycja rodzica
+                pos = self.grid.positions[self]
+                self.grid.add_agents([offspring], positions=[pos])
+                self.model.agents.append(offspring)
+
+            # energia rodzica też dzielona (tak jak w Twoim kodzie)
+            self.energy /= nb_offsprings
+
+    def die_check(self):
+        """Usunięcie agenta z grida i listy modelu."""
         if self.energy <= 0:
-            self.remove()
+            self.grid.remove_agents([self])
+            if self in self.model.agents:
+                self.model.agents.remove(self)
             return True
         return False
 
 
-# =========================
-# === PREY ================
-# =========================
-
-class Prey(Animal):
+class Prey(GenericAgent):
 
     def setup(self):
-        self.max_energy = self.p.prey_max_energy
-        self.energy_consum = self.p.prey_energy_consum
-        self.proba_reproduce = self.p.prey_proba_reproduce
-        self.nb_max_offsprings = self.p.prey_nb_max_offsprings
-        self.energy_reproduce = self.p.prey_energy_reproduce
-        self.max_transfer = self.p.prey_max_transfer
         super().setup()
+        self.max_energy = PREY_MAX_ENERGY
+        self.energy_consum = PREY_ENERGY_CONSUM
+        self.proba_reproduce = PREY_PROBA_REPRODUCE
+        self.nb_max_offsprings = PREY_NB_MAX_OFFSPRINGS
+        self.energy_reproduce = PREY_ENERGY_REPRODUCE
+        self.energy = self.random.uniform(0, self.max_energy)
 
     def step(self):
-        grid = self.model.grid
-        self.move()
+        # jeśli agent został usunięty w tym kroku – nic nie rób
+        if self not in self.model.agents:
+            return
+
+        self.basic_move()
         self.energy -= self.energy_consum
 
-        x, y = grid.positions[self]
-        food = self.model.vegetation_food[x, y]
-
-        if food > 0:
-            transfer = min(self.max_transfer, food)
+        # Jedzenie (NumPy jako bufor wegetacji)
+        x, y = self.grid.positions[self]
+        available_food = self.model.vegetation_food[x, y]
+        if available_food > 0:
+            transfer = min(PREY_MAX_TRANSFER, available_food)
             self.model.vegetation_food[x, y] -= transfer
             self.energy += transfer
 
-        self.energy = min(self.energy, self.max_energy)
-        if self.die_if_needed():
+        if self.energy > self.max_energy:
+            self.energy = self.max_energy
+
+        if self.die_check():
             return
 
-        if self.energy >= self.energy_reproduce and random.random() < self.proba_reproduce:
-            n = random.randint(1, self.nb_max_offsprings)
-            share = self.energy / n
-            for _ in range(n):
-                child = self.model.new_agent(Prey)
-                child.energy = share
-                grid.place_agent(child, grid.positions[self])
-            self.energy /= n
+        self.attempt_reproduce(Prey)
 
 
-# =========================
-# === PREDATOR ============
-# =========================
-
-class Predator(Animal):
+class Predator(GenericAgent):
 
     def setup(self):
-        self.max_energy = self.p.predator_max_energy
-        self.energy_consum = self.p.predator_energy_consum
-        self.proba_reproduce = self.p.predator_proba_reproduce
-        self.nb_max_offsprings = self.p.predator_nb_max_offsprings
-        self.energy_reproduce = self.p.predator_energy_reproduce
-        self.energy_transfer = self.p.predator_energy_transfer
         super().setup()
+        self.max_energy = PREDATOR_MAX_ENERGY
+        self.energy_consum = PREDATOR_ENERGY_CONSUM
+        self.proba_reproduce = PREDATOR_PROBA_REPRODUCE
+        self.nb_max_offsprings = PREDATOR_NB_MAX_OFFSPRINGS
+        self.energy_reproduce = PREDATOR_ENERGY_REPRODUCE
+        self.energy = self.random.uniform(0, self.max_energy)
 
     def step(self):
-        grid = self.model.grid
-        self.move()
-        self.energy -= self.energy_consum
-
-        pos = grid.positions[self]
-        preys_here = list(self.model.preys.at(pos))
-
-        if preys_here:
-            victim = random.choice(preys_here)
-            victim.remove()
-            self.energy += self.energy_transfer
-
-        self.energy = min(self.energy, self.max_energy)
-        if self.die_if_needed():
+        if self not in self.model.agents:
             return
 
-        if self.energy >= self.energy_reproduce and random.random() < self.proba_reproduce:
-            n = random.randint(1, self.nb_max_offsprings)
-            share = self.energy / n
-            for _ in range(n):
-                child = self.model.new_agent(Predator)
-                child.energy = share
-                grid.place_agent(child, pos)
-            self.energy /= n
+        self.basic_move()
+        self.energy -= self.energy_consum
+
+        # Jedzenie – inne agenty w tej samej komórce
+        pos = self.grid.positions[self]
+        cell_mates = self.grid.agents[pos].to_list()
+        reachable_preys = [obj for obj in cell_mates if isinstance(obj, Prey)]
+
+        if reachable_preys:
+            victim = self.random.choice(reachable_preys)
+            self.grid.remove_agents([victim])
+            if victim in self.model.agents:
+                self.model.agents.remove(victim)
+            self.energy += PREDATOR_ENERGY_TRANSFER
+
+        if self.energy > self.max_energy:
+            self.energy = self.max_energy
+
+        if self.die_check():
+            return
+
+        self.attempt_reproduce(Predator)
 
 
-# =========================
-# === MODEL ===============
-# =========================
+# ==========================================
+# MODEL – agentpy
+# ==========================================
 
 class PreyPredatorModel(ap.Model):
 
     def setup(self):
-        self.grid = ap.Grid(
-            self,
-            shape=(self.p.width, self.p.height),
-            torus=True
-        )
+        # Parametry z self.p (dostarczone w konstruktorze)
+        self.width = self.p.width
+        self.height = self.p.height
+        self.nb_preys = self.p.nb_preys
+        self.nb_predators = self.p.nb_predators
 
-        self.vegetation_food = np.random.rand(self.p.width, self.p.height)
-        self.vegetation_prod = np.random.rand(self.p.width, self.p.height) * 0.01
+        # Kierunki ruchu (Moore, bez stania w miejscu)
+        self.move_directions = [
+            (dx, dy)
+            for dx in (-1, 0, 1)
+            for dy in (-1, 0, 1)
+            if not (dx == 0 and dy == 0)
+        ]
 
-        self.preys = ap.AgentSet(self, self.p.nb_preys_init, Prey)
-        self.predators = ap.AgentSet(self, self.p.nb_predators_init, Predator)
+        # Grid typu torus (jak MultiGrid(..., torus=True))
+        self.grid = ap.Grid(self, (self.width, self.height), torus=True)
 
-        self.grid.add_agents(self.preys, random=True)
-        self.grid.add_agents(self.predators, random=True)
+        # Lista agentów – jeden kontener dla wszystkich typów
+        self.agents = ap.AgentList(self)
+
+        # Inicjalizacja trawy (NumPy – jak w Mesie)
+        self.vegetation_food = np.random.rand(self.width, self.height)
+        self.vegetation_prod = np.random.rand(self.width, self.height) * 0.01
+        self.max_food = CELL_MAX_FOOD
+
+        # Tworzenie agentów
+        for _ in range(self.nb_preys):
+            a = Prey(self)
+            self.agents.append(a)
+
+        for _ in range(self.nb_predators):
+            b = Predator(self)
+            self.agents.append(b)
+
+        # Rozmieszczenie agentów losowo po gridzie
+        self.grid.add_agents(self.agents, random=True)
 
     def step(self):
+        # 1. Wzrost trawy (cała macierz na raz)
         self.vegetation_food += self.vegetation_prod
-        np.clip(
-            self.vegetation_food,
-            0,
-            self.p.cell_max_food,
-            out=self.vegetation_food
-        )
+        np.clip(self.vegetation_food, 0, self.max_food, out=self.vegetation_food)
 
-        self.preys.step()
-        self.predators.step()
+        # 2. Ruch / akcje agentów
+        # iterujemy po kopii listy, żeby móc usuwać/dodawać
+        for agent in list(self.agents):
+            agent.step()
 
-    def update(self):
-        if self.t % 100 == 0:
-            print(
-                f"Krok {self.t}: "
-                f"Prey={len(self.preys)}, "
-                f"Pred={len(self.predators)}"
-            )
-
-        if (
-            self.t >= self.p.steps_to_run
-            or (len(self.preys) == 0 and len(self.predators) == 0)
-        ):
-            self.stop()
+    def count_agents(self):
+        """Pomocniczo, do logów — liczymy po typie klasy."""
+        preys = 0
+        predators = 0
+        for agent in self.agents:
+            if isinstance(agent, Prey):
+                preys += 1
+            elif isinstance(agent, Predator):
+                predators += 1
+        return preys, predators
 
 
-# =========================
-# === MAIN ================
-# =========================
+# ==========================================
+# RUNNER (BENCHMARK, jak w wersji Mesa)
+# ==========================================
 
 if __name__ == "__main__":
     print(f"=== START BENCHMARKU ({STEPS_TO_RUN} kroków) ===")
+    print(f"Konfiguracja: {WIDTH}x{HEIGHT}, Prey: {NB_PREYS_INIT}, Predator: {NB_PREDATORS_INIT}")
 
-    start = time.time()
+    parameters = dict(
+        steps=STEPS_TO_RUN,   # nie używamy model.run(), ale można zostawić
+        nb_preys=NB_PREYS_INIT,
+        nb_predators=NB_PREDATORS_INIT,
+        width=WIDTH,
+        height=HEIGHT,
+    )
+
+    # Inicjalizacja modelu
+    setup_start = time.time()
     model = PreyPredatorModel(parameters)
-    model.run()
-    total_time = time.time() - start
 
-    fps = model.t / total_time if total_time > 0 else 0
+    # WAŻNE: w agentpy setup nie odpala się automatycznie,
+    # bo zwykle robi to model.run(). Tu robimy benchmark, więc:
+    model.setup()
+
+    setup_time = time.time() - setup_start
+    print(f"Czas inicjalizacji: {setup_time:.4f} s")
+
+    # Główna pętla pomiarowa
+    loop_start = time.time()
+
+    last_step = 0
+    for i in range(STEPS_TO_RUN):
+        model.step()
+
+        if i % 100 == 0:
+            n_prey, n_pred = model.count_agents()
+            print(f"Krok {i}: Prey={n_prey}, Pred={n_pred}")
+            if n_prey == 0 and n_pred == 0:
+                print("Wszyscy zginęli - przerywam test.")
+                last_step = i
+                break
+        last_step = i
+
+    loop_end = time.time()
+    total_time = loop_end - loop_start
+    avg_fps = (last_step + 1) / total_time if total_time > 0 else 0.0
 
     print("\n=== WYNIKI ===")
     print(f"Całkowity czas pętli: {total_time:.4f} s")
-    print(f"Średnia wydajność:    {fps:.2f} kroków/s (FPS)")
+    print(f"Średnia wydajność:    {avg_fps:.2f} kroków/s (FPS)")
     print("==================")
