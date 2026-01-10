@@ -4,11 +4,36 @@ import numpy as np
 from mesa import Agent, Model
 from mesa.time import RandomActivation
 from mesa.space import MultiGrid
+import argparse
 
+parser = argparse.ArgumentParser(description="Prey-Predator ABM (Mesa)")
 
-STEPS_TO_RUN = 2000
-NB_PREYS_INIT = 200
-NB_PREDATORS_INIT = 20
+parser.add_argument(
+    "--steps",
+    type=int,
+    default=2000,
+    help="Liczba kroków symulacji"
+)
+
+parser.add_argument(
+    "--preys",
+    type=int,
+    default=200,
+    help="Początkowa liczba prey"
+)
+
+parser.add_argument(
+    "--predators",
+    type=int,
+    default=20,
+    help="Początkowa liczba predatorów"
+)
+
+args = parser.parse_args()
+
+STEPS_TO_RUN = args.steps
+NB_PREYS_INIT = args.preys
+NB_PREDATORS_INIT = args.predators
 WIDTH = 50
 HEIGHT = 50
 

@@ -1,0 +1,5 @@
+platform,agents,preys,predators,avg_cpu,max_cpu,avg_mem_mb,max_mem_mb
+agentsjl,100,80,20,102.208,111.85,276.58,367.5 
+agentsjl,1000,800,200,98.686,100.11,299.54,386.6 
+agentsjl,10000,8000,2000,102.87,113.85,262.2,380.1 
+agentsjl,100000,80000,20000,100.192,102.35,331.38,424.6 

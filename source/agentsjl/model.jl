@@ -2,11 +2,37 @@ using Agents
 using Random
 using Statistics
 using Dates
+using ArgParse
+
+function parse_commandline()
+    s = ArgParseSettings()
+
+    @add_arg_table s begin
+        "--steps"
+            help = "Liczba kroków symulacji"
+            arg_type = Int
+            default = 2000
+
+        "--preys"
+            help = "Początkowa liczba ofiar"
+            arg_type = Int
+            default = 200
+
+        "--predators"
+            help = "Początkowa liczba drapieżników"
+            arg_type = Int
+            default = 20
+    end
+
+    return parse_args(s)
+end
+
+ARGS_PARSED = parse_commandline()
 
 
-const STEPS_TO_RUN = 2000
-const NB_PREYS_INIT = 200
-const NB_PREDATORS_INIT = 20
+STEPS_TO_RUN = ARGS_PARSED["steps"]
+NB_PREYS_INIT = ARGS_PARSED["preys"]
+NB_PREDATORS_INIT = ARGS_PARSED["predators"]
 const DIMS = (50, 50)
 
 const PREY_MAX_ENERGY = 1.0
