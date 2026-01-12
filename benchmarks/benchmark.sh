@@ -45,7 +45,7 @@ fi
 # ============================================================
 IMAGE_NAME="abm-${PLATFORM}"
 
-AGENT_LIST=(3000)
+AGENT_LIST=(200 400 600 800 1000)
 PREY_RATIO=0.85
 CELL_DENSITY=0.15
 STEPS=2000
@@ -63,9 +63,10 @@ mkdir -p "$OUT_DIR" "$LOG_DIR"
 # ============================================================
 #  CSV header
 # ============================================================
-echo "platform,agents,preys,predators,grid,avg_cpu,max_cpu,avg_mem_mb,max_mem_mb" \
-  > "$OUT_FILE"
-
+if [ ! -f "$OUT_FILE" ]; then
+  echo "platform,agents,preys,predators,grid,avg_cpu,max_cpu,avg_mem_mb,max_mem_mb" \
+    > "$OUT_FILE"
+fi
 # ============================================================
 #  Build Docker image
 # ============================================================

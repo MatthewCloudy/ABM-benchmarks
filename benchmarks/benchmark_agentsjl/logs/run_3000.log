@@ -12,30 +12,30 @@ https://discourse.julialang.org/t/agents-jl-v6-releases-announcement-post/111678
 (and see the CHANGELOG.md file online for a list of changes!)
 === START BENCHMARKU (Julia) ===
 Konfiguracja: 141x141, Prey: 2550, Predator: 450
-Czas inicjalizacji: 0.639 s
-Krok 100: Prey=517, Pred=1115
-Krok 200: Prey=559, Pred=59
-Krok 300: Prey=4457, Pred=46
-Krok 400: Prey=1217, Pred=192
-Krok 500: Prey=1717, Pred=353
-Krok 600: Prey=698, Pred=587
-Krok 700: Prey=1123, Pred=249
-Krok 800: Prey=1728, Pred=538
-Krok 900: Prey=499, Pred=529
-Krok 1000: Prey=1669, Pred=183
-Krok 1100: Prey=1993, Pred=578
-Krok 1200: Prey=342, Pred=382
-Krok 1300: Prey=1498, Pred=75
-Krok 1400: Prey=2830, Pred=240
-Krok 1500: Prey=866, Pred=443
-Krok 1600: Prey=1296, Pred=422
-Krok 1700: Prey=877, Pred=616
-Krok 1800: Prey=797, Pred=283
-Krok 1900: Prey=2104, Pred=420
-Krok 2000: Prey=541, Pred=713
+Czas inicjalizacji: 0.575 s
+Krok 100: Prey=542, Pred=1074
+Krok 200: Prey=754, Pred=86
+Krok 300: Prey=4463, Pred=151
+Krok 400: Prey=865, Pred=455
+Krok 500: Prey=1133, Pred=378
+Krok 600: Prey=988, Pred=545
+Krok 700: Prey=855, Pred=359
+Krok 800: Prey=1411, Pred=460
+Krok 900: Prey=706, Pred=597
+Krok 1000: Prey=1100, Pred=238
+Krok 1100: Prey=1825, Pred=568
+Krok 1200: Prey=370, Pred=517
+Krok 1300: Prey=1269, Pred=99
+Krok 1400: Prey=3069, Pred=357
+Krok 1500: Prey=577, Pred=570
+Krok 1600: Prey=1406, Pred=165
+Krok 1700: Prey=2100, Pred=571
+Krok 1800: Prey=420, Pred=458
+Krok 1900: Prey=1821, Pred=132
+Krok 2000: Prey=1732, Pred=587
 
 === WYNIKI (Julia) ===
-Całkowity czas pętli: 2.9254 s
-Średnia wydajność:    683.66 kroków/s (FPS)
-Średni czas kroku: 0.0015 s
+Całkowity czas pętli: 2.7111 s
+Średnia wydajność:    737.71 kroków/s (FPS)
+Średni czas kroku: 0.0014 s
 ======================
