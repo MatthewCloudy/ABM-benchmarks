@@ -4,20 +4,27 @@ import matplotlib.pyplot as plt
 # Ścieżki do plików
 mesa_path = "benchmark_mesa/results.csv"
 agentsjl_path = "benchmark_agentsjl/results.csv"
+agentpy_path = "benchmark_agentpy/results.csv"
 
 # Wczytanie danych
 mesa = pd.read_csv(mesa_path)
 agentsjl = pd.read_csv(agentsjl_path)
+agentpy = pd.read_csv(agentpy_path)
 
 # Upewniamy się, że dane są posortowane po liczbie agentów
 mesa = mesa.sort_values("agents")
 agentsjl = agentsjl.sort_values("agents")
+agentpy = agentpy.sort_values("agents")
 
 # Pomocnicza funkcja do rysowania wykresów
 def plot_metric(y_col, y_label, title):
     plt.figure(figsize=(8, 5))
     plt.plot(mesa["agents"], mesa[y_col], marker="o", label="Mesa")
     plt.plot(agentsjl["agents"], agentsjl[y_col], marker="o", label="Agents.jl")
+    plt.plot(agentpy["agents"], agentpy[y_col], marker="o", label="AgentPy")
+    
+    plt.xscale("log") 
+    
     plt.xlabel("Liczba agentów")
     plt.ylabel(y_label)
     plt.title(title)

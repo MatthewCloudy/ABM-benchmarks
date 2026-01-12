@@ -13,7 +13,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PLATFORM="$1"
 
 if [ -z "$PLATFORM" ]; then
-  echo "Usage: ./benchmark.sh <mesa|agentsjl|gama|agentpy>"
+  echo "Usage: ./benchmark_time.sh <mesa|agentsjl|gama|agentpy>"
   exit 1
 fi
 
@@ -45,17 +45,13 @@ fi
 # ============================================================
 IMAGE_NAME="abm-${PLATFORM}"
 
-AGENT_LIST=(3000)
-PREY_RATIO=0.85
-CELL_DENSITY=0.15
-STEPS=2000
-
-INTERVAL=0.5
-STARTUP_DELAY=0.2
-MIN_SAMPLES=5
+AGENT_LIST=(500 1000)
+PREY_RATIO=0.8
+CELL_DENSITY=0.2
+STEPS=1000
 
 OUT_DIR="$PROJECT_ROOT/benchmarks/benchmark_${PLATFORM}"
-OUT_FILE="$OUT_DIR/results.csv"
+OUT_FILE="$OUT_DIR/benchmark_time.csv"
 LOG_DIR="$OUT_DIR/logs"
 
 mkdir -p "$OUT_DIR" "$LOG_DIR"
@@ -63,7 +59,7 @@ mkdir -p "$OUT_DIR" "$LOG_DIR"
 # ============================================================
 #  CSV header
 # ============================================================
-echo "platform,agents,preys,predators,grid,avg_cpu,max_cpu,avg_mem_mb,max_mem_mb" \
+echo "platform,agents,preys,predators,grid,time_seconds,fps" \
   > "$OUT_FILE"
 
 # ============================================================
@@ -91,10 +87,10 @@ for AGENTS in "${AGENT_LIST[@]}"; do
   echo "▶ agents=$AGENTS prey=$PREYS predator=$PREDATORS grid=${GRID_SIZE}x${GRID_SIZE}"
 
   # ------------------------------------------------------------
-  # Warm-up run (ONLY ONCE)
+  # Warm-up run (ONLY ONCE, for first agent count)
   # ------------------------------------------------------------
   if [ "$FIRST_RUN" = true ]; then
-    echo "  → Warm-up run (once, ignored)"
+    echo "  → Warm-up run (only once)"
 
     docker run --rm \
       "$IMAGE_NAME" \
@@ -102,7 +98,7 @@ for AGENTS in "${AGENT_LIST[@]}"; do
       --preys "$PREYS" \
       --predators "$PREDATORS" \
       --grid "$GRID_SIZE" \
-      >/dev/null
+      > "$LOG_DIR/warmup.log"
 
     FIRST_RUN=false
   fi
@@ -112,61 +108,32 @@ for AGENTS in "${AGENT_LIST[@]}"; do
   # ------------------------------------------------------------
   echo "  → Measured run"
 
-  CID=$(docker run -d \
+  LOG_FILE="$LOG_DIR/run_${AGENTS}.log"
+
+  docker run --rm \
     "$IMAGE_NAME" \
     --steps "$STEPS" \
     --preys "$PREYS" \
     --predators "$PREDATORS" \
-    --grid "$GRID_SIZE")
+    --grid "$GRID_SIZE" \
+    > "$LOG_FILE"
 
-  sleep "$STARTUP_DELAY"
+  TIME=$(grep -E "Całkowity czas pętli" "$LOG_FILE" | \
+    sed -E 's/.*: *([0-9.]+).*/\1/')
 
-  CPU_VALUES=()
-  MEM_VALUES=()
-  SAMPLES=0
+  FPS=$(grep -E "Średnia wydajność" "$LOG_FILE" | \
+    sed -E 's/.*: *([0-9.]+).*/\1/')
 
-  while docker ps -q | grep -q "$CID" || [ "$SAMPLES" -lt "$MIN_SAMPLES" ]; do
-    STATS=$(docker stats "$CID" --no-stream \
-      --format "{{.CPUPerc}},{{.MemUsage}}" 2>/dev/null || true)
+  if [ -z "$TIME" ] || [ -z "$FPS" ]; then
+    echo "⚠️  Failed to parse time/FPS for agents=$AGENTS"
+    continue
+  fi
 
-    if [ -n "$STATS" ]; then
-      CPU=$(echo "$STATS" | cut -d',' -f1 | tr -d '%')
-
-      RAW_MEM=$(echo "$STATS" | cut -d',' -f2 | cut -d'/' -f1)
-      if [[ "$RAW_MEM" == *GiB ]]; then
-        MEM=$(echo "$RAW_MEM" | sed 's/GiB//' | awk '{print $1 * 1024}')
-      else
-        MEM=$(echo "$RAW_MEM" | sed 's/MiB//')
-      fi
-
-      CPU_VALUES+=("$CPU")
-      MEM_VALUES+=("$MEM")
-      SAMPLES=$((SAMPLES + 1))
-    fi
-
-    sleep "$INTERVAL"
-  done
-
-  # Czekamy aż kontener faktycznie się zakończy
-  docker wait "$CID" >/dev/null
-
-  # Zapis pełnych logów PO zakończeniu
-  LOG_FILE="$LOG_DIR/run_${AGENTS}.log"
-  docker logs "$CID" > "$LOG_FILE"
-
-  # Statystyki
-  AVG_CPU=$(printf "%s\n" "${CPU_VALUES[@]}" | awk '{s+=$1} END {print (NR>0)?s/NR:0}')
-  MAX_CPU=$(printf "%s\n" "${CPU_VALUES[@]}" | sort -nr | head -1)
-
-  AVG_MEM=$(printf "%s\n" "${MEM_VALUES[@]}" | awk '{s+=$1} END {print (NR>0)?s/NR:0}')
-  MAX_MEM=$(printf "%s\n" "${MEM_VALUES[@]}" | sort -nr | head -1)
-
-  echo "$PLATFORM,$AGENTS,$PREYS,$PREDATORS,$GRID_SIZE,$AVG_CPU,$MAX_CPU,$AVG_MEM,$MAX_MEM" \
+  echo "$PLATFORM,$AGENTS,$PREYS,$PREDATORS,$GRID_SIZE,$TIME,$FPS" \
     >> "$OUT_FILE"
 
   echo "✔ Done: agents=$AGENTS"
 done
 
-echo "✅ Benchmark finished"
+echo "✅ Time benchmark finished"
 echo "📄 Results saved to: $OUT_FILE"
-echo "📂 Logs saved to: $LOG_DIR"

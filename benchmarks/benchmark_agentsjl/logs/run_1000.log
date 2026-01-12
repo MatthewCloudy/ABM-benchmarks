@@ -1,0 +1,41 @@
+
+Update message: Agents v6
+
+This is a new major version of Agents.jl with lots of cool stuff!
+However, from this version onwards, we will stop posting update messages
+to the REPL console!
+
+If you want to be updated, follow this discourse post:
+
+https://discourse.julialang.org/t/agents-jl-v6-releases-announcement-post/111678
+
+(and see the CHANGELOG.md file online for a list of changes!)
+=== START BENCHMARKU (Julia) ===
+Konfiguracja: 81x81, Prey: 850, Predator: 150
+Czas inicjalizacji: 0.553 s
+Krok 100: Prey=203, Pred=385
+Krok 200: Prey=154, Pred=23
+Krok 300: Prey=1445, Pred=13
+Krok 400: Prey=442, Pred=21
+Krok 500: Prey=648, Pred=61
+Krok 600: Prey=427, Pred=139
+Krok 700: Prey=313, Pred=169
+Krok 800: Prey=279, Pred=151
+Krok 900: Prey=455, Pred=131
+Krok 1000: Prey=235, Pred=195
+Krok 1100: Prey=244, Pred=69
+Krok 1200: Prey=682, Pred=97
+Krok 1300: Prey=210, Pred=283
+Krok 1400: Prey=323, Pred=62
+Krok 1500: Prey=1045, Pred=106
+Krok 1600: Prey=179, Pred=227
+Krok 1700: Prey=372, Pred=35
+Krok 1800: Prey=1051, Pred=91
+Krok 1900: Prey=247, Pred=168
+Krok 2000: Prey=340, Pred=89
+
+=== WYNIKI (Julia) ===
+Całkowity czas pętli: 1.501 s
+Średnia wydajność:    1332.41 kroków/s (FPS)
+Średni czas kroku: 0.0008 s
+======================

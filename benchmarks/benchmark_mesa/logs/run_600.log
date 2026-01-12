@@ -1,0 +1,29 @@
+=== START BENCHMARKU (2000 kroków) ===
+Konfiguracja: 90x90, Prey: 510, Predator: 90
+Czas inicjalizacji: 0.0049 s
+Krok 0: Prey=515, Pred=89
+Krok 100: Prey=958, Pred=150
+Krok 200: Prey=430, Pred=158
+Krok 300: Prey=703, Pred=74
+Krok 400: Prey=777, Pred=113
+Krok 500: Prey=639, Pred=104
+Krok 600: Prey=599, Pred=101
+Krok 700: Prey=714, Pred=78
+Krok 800: Prey=665, Pred=82
+Krok 900: Prey=685, Pred=106
+Krok 1000: Prey=662, Pred=103
+Krok 1100: Prey=665, Pred=92
+Krok 1200: Prey=696, Pred=103
+Krok 1300: Prey=614, Pred=116
+Krok 1400: Prey=614, Pred=104
+Krok 1500: Prey=710, Pred=81
+Krok 1600: Prey=683, Pred=110
+Krok 1700: Prey=597, Pred=115
+Krok 1800: Prey=681, Pred=100
+Krok 1900: Prey=641, Pred=84
+
+=== WYNIKI ===
+Całkowity czas pętli: 7.2242 s
+Średnia wydajność:    276.85 kroków/s (FPS)
+Średni czas kroku: 0.0036 s
+==================

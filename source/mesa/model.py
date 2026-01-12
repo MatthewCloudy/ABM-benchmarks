@@ -29,13 +29,20 @@ parser.add_argument(
     help="Początkowa liczba predatorów"
 )
 
+parser.add_argument(
+    "--grid",
+    type=int,
+    default=20,
+    help="Szerokość i długość siatki"
+)
+
 args = parser.parse_args()
 
 STEPS_TO_RUN = args.steps
 NB_PREYS_INIT = args.preys
 NB_PREDATORS_INIT = args.predators
-WIDTH = 50
-HEIGHT = 50
+WIDTH = args.predators
+HEIGHT = args.predators
 
 PREY_MAX_ENERGY = 1.0
 PREY_MAX_TRANSFER = 0.1
@@ -214,8 +221,10 @@ if __name__ == "__main__":
     loop_end = time.time()
     total_time = loop_end - loop_start
     avg_fps = (i + 1) / total_time
+    avg_step = total_time / (i + 1)
 
     print("\n=== WYNIKI ===")
     print(f"Całkowity czas pętli: {total_time:.4f} s")
     print(f"Średnia wydajność:    {avg_fps:.2f} kroków/s (FPS)")
+    print(f"Średni czas kroku: {avg_step:.4f} s")
     print("==================")

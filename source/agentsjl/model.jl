@@ -22,6 +22,11 @@ function parse_commandline()
             help = "Początkowa liczba drapieżników"
             arg_type = Int
             default = 20
+
+        "--grid"
+            help = "Szerokość i długość siatki"
+            arg_type = Int
+            default = 20
     end
 
     return parse_args(s)
@@ -33,7 +38,7 @@ ARGS_PARSED = parse_commandline()
 STEPS_TO_RUN = ARGS_PARSED["steps"]
 NB_PREYS_INIT = ARGS_PARSED["preys"]
 NB_PREDATORS_INIT = ARGS_PARSED["predators"]
-const DIMS = (50, 50)
+const DIMS = (ARGS_PARSED["grid"], ARGS_PARSED["grid"])
 
 const PREY_MAX_ENERGY = 1.0
 const PREY_MAX_TRANSFER = 0.1
@@ -187,8 +192,10 @@ end
 t_loop_end = time()
 total_time = t_loop_end - t_loop_start
 avg_fps = STEPS_TO_RUN / total_time
+avg_steps = total_time / STEPS_TO_RUN
 
 println("\n=== WYNIKI (Julia) ===")
 println("Całkowity czas pętli: $(round(total_time, digits=4)) s")
 println("Średnia wydajność:    $(round(avg_fps, digits=2)) kroków/s (FPS)")
+println("Średni czas kroku: $(round(avg_steps, digits=4)) s")
 println("======================")

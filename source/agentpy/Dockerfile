@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir agentpy numpy
 COPY model.py .
 
 # Uruchomienie
-CMD ["python", "model.py"]
+ENTRYPOINT ["python", "model.py"]

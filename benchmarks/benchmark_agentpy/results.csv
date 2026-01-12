@@ -1,2 +1,2 @@
 platform,agents,preys,predators,grid,avg_cpu,max_cpu,avg_mem_mb,max_mem_mb
-agentsjl,3000,2550,450,141,101.12,104.67,302.98,405.2 
+agentpy,1000,850,150,81,104.058,121.94,135.368,151.4 

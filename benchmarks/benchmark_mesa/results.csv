@@ -1,5 +1,2 @@
-platform,agents,preys,predators,avg_cpu,max_cpu,avg_mem_mb,max_mem_mb
-mesa,100,80,20,20.322,101.61,14.25,71.25 
-mesa,1000,800,200,39.882,99.92,27.832,69.58 
-mesa,10000,8000,2000,19.982,99.91,14.824,74.12 
-mesa,100000,80000,20000,99.864,100.82,99.162,103.8 
+platform,agents,preys,predators,grid,avg_cpu,max_cpu,avg_mem_mb,max_mem_mb
+mesa,3000,2550,450,141,98.756,100.23,208.094,276.9 

@@ -3,14 +3,45 @@ import random
 import numpy as np
 import agentpy as ap
 
-# ==========================================
-# KONFIGURACJA (te same parametry co w Mesa)
-# ==========================================
-STEPS_TO_RUN = 2000  # Ile kroków ma trwać test
-NB_PREYS_INIT = 2000
-NB_PREDATORS_INIT = 200
-WIDTH = 150
-HEIGHT = 150
+import argparse
+
+parser = argparse.ArgumentParser(description="Prey-Predator ABM (AgentPy)")
+
+parser.add_argument(
+    "--steps",
+    type=int,
+    default=2000,
+    help="Liczba kroków symulacji"
+)
+
+parser.add_argument(
+    "--preys",
+    type=int,
+    default=200,
+    help="Początkowa liczba prey"
+)
+
+parser.add_argument(
+    "--predators",
+    type=int,
+    default=20,
+    help="Początkowa liczba predatorów"
+)
+
+parser.add_argument(
+    "--grid",
+    type=int,
+    default=20,
+    help="Szerokość i długość siatki"
+)
+
+args = parser.parse_args()
+
+STEPS_TO_RUN = args.steps
+NB_PREYS_INIT = args.preys
+NB_PREDATORS_INIT = args.predators
+WIDTH = args.predators
+HEIGHT = args.predators
 
 # Parametry Agentów
 PREY_MAX_ENERGY = 1.0
@@ -266,8 +297,11 @@ if __name__ == "__main__":
     loop_end = time.time()
     total_time = loop_end - loop_start
     avg_fps = (last_step + 1) / total_time if total_time > 0 else 0.0
+    avg_step = total_time / (last_step + 1)
 
     print("\n=== WYNIKI ===")
     print(f"Całkowity czas pętli: {total_time:.4f} s")
     print(f"Średnia wydajność:    {avg_fps:.2f} kroków/s (FPS)")
+    print(f"Średni czas kroku: {avg_step:.4f} s")
     print("==================")
+
